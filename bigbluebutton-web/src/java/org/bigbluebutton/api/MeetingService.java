@@ -26,9 +26,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -151,8 +151,7 @@ public class MeetingService implements MessageListener {
     }
 
     private void removeUserSessions(String meetingId) {
-        Iterator<Map.Entry<String, UserSession>> iterator = sessions.entrySet()
-                .iterator();
+        Iterator<Map.Entry<String, UserSession>> iterator = sessions.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, UserSession> entry = iterator.next();
             UserSession userSession = entry.getValue();
@@ -255,7 +254,7 @@ public class MeetingService implements MessageListener {
     private void handleCreateMeeting(Meeting m) {
         meetings.put(m.getInternalId(), m);
         if (m.isRecord()) {
-            Map<String, String> metadata = new LinkedHashMap<String, String>();
+            Map<String, String> metadata = new TreeMap<String, String>();
             metadata.putAll(m.getMetadata());
             // TODO: Need a better way to store these values for recordings
             metadata.put("meetingId", m.getExternalId());
@@ -299,10 +298,8 @@ public class MeetingService implements MessageListener {
                 message.externUserID, message.authToken);
     }
 
-    public String addSubscription(String meetingId, String event,
-            String callbackURL) {
-        String sid = messagingService.storeSubscription(meetingId, event,
-                callbackURL);
+    public String addSubscription(String meetingId, String event, String callbackURL) {
+        String sid = messagingService.storeSubscription(meetingId, event, callbackURL);
         return sid;
     }
 
@@ -374,25 +371,33 @@ public class MeetingService implements MessageListener {
                 r.setMeetingID(mid);
                 r.setName(name);
 
-                ArrayList<Playback> plays = new ArrayList<Playback>();
+                List<Playback> plays = new ArrayList<Playback>();
 
                 if (r.getPlaybackFormat() != null) {
-                    plays.add(new Playback(r.getPlaybackFormat(), r
-                            .getPlaybackLink(), getDurationRecording(
-                            r.getPlaybackDuration(), r.getEndTime(),
-                            r.getStartTime()), r.getPlaybackExtensions()));
+                    plays.add( new Playback( r.getPlaybackFormat(),
+                                             r.getPlaybackLink(),
+                                             getDurationRecording( r.getPlaybackDuration(),
+                                                                   r.getEndTime(),
+                                                                   r.getStartTime()),
+                                                                   r.getPlaybackExtensions()
+                                                                 )
+                                           );
                 }
 
                 r.setPlaybacks(plays);
                 map.put(r.getId(), r);
             } else {
                 Recording rec = map.get(r.getId());
-                rec.getPlaybacks().add(
-                        new Playback(r.getPlaybackFormat(),
-                                r.getPlaybackLink(), getDurationRecording(
-                                        r.getPlaybackDuration(),
-                                        r.getEndTime(), r.getStartTime()), r
-                                        .getPlaybackExtensions()));
+                rec.getPlaybacks().add( new Playback( r.getPlaybackFormat(),
+                                                      r.getPlaybackLink(),
+                                                      getDurationRecording(
+                                                                            r.getPlaybackDuration(),
+                                                                            r.getEndTime(),
+                                                                            r.getStartTime()
+                                                                           ),
+                                                      r.getPlaybackExtensions()
+                                                    )
+                                       );
             }
         }
 
@@ -404,11 +409,9 @@ public class MeetingService implements MessageListener {
         int duration;
         try {
             if (!playbackDuration.equals("")) {
-                duration = (int) Math
-                        .ceil((Long.parseLong(playbackDuration)) / 60000.0);
+                duration = (int) Math.ceil((Long.parseLong(playbackDuration)) / 60000.0);
             } else {
-                duration = (int) Math.ceil((Long.parseLong(end) - Long
-                        .parseLong(start)) / 60000.0);
+                duration = (int) Math.ceil((Long.parseLong(end) - Long.parseLong(start)) / 60000.0);
             }
         } catch (Exception e) {
             log.debug(e.getMessage());
@@ -432,10 +435,14 @@ public class MeetingService implements MessageListener {
         }
     }
 
-    public void deleteRecordings(ArrayList<String> idList) {
+    public void deleteRecordings(List<String> idList) {
         for (String id : idList) {
             recordingService.changeState(id, Recording.STATE_DELETED);
         }
+    }
+
+    public void updateRecordings(List<String> idList, Map<String, String> metaParams) {
+            recordingService.updateMetaParams(idList, metaParams);
     }
 
     public void processRecording(String meetingId) {
@@ -453,10 +460,8 @@ public class MeetingService implements MessageListener {
         messagingService.send(channel, message);
     }
 
-    public void createdPolls(String meetingId, String title, String question,
-            String questionType, ArrayList<String> answers) {
-        messagingService.sendPolls(meetingId, title, question, questionType,
-                answers);
+    public void createdPolls(String meetingId, String title, String question, String questionType, List<String> answers) {
+        messagingService.sendPolls(meetingId, title, question, questionType, answers);
     }
 
     public void endMeeting(String meetingId) {
@@ -478,8 +483,7 @@ public class MeetingService implements MessageListener {
         }
     }
 
-    public void addUserCustomData(String meetingId, String userID,
-            Map<String, String> userCustomData) {
+    public void addUserCustomData(String meetingId, String userID, Map<String, String> userCustomData) {
         Meeting m = getMeeting(meetingId);
         if (m != null) {
             m.addUserCustomData(userID, userCustomData);
@@ -553,8 +557,7 @@ public class MeetingService implements MessageListener {
     private void userJoined(UserJoined message) {
         Meeting m = getMeeting(message.meetingId);
         if (m != null) {
-            User user = new User(message.userId, message.externalUserId,
-                    message.name, message.role);
+            User user = new User(message.userId, message.externalUserId, message.name, message.role);
             m.userJoined(user);
 
             Map<String, Object> logData = new HashMap<String, Object>();
@@ -770,8 +773,7 @@ public class MeetingService implements MessageListener {
         messagingService = mess;
     }
 
-    public void setExpiredMeetingCleanupTimerTask(
-            ExpiredMeetingCleanupTimerTask c) {
+    public void setExpiredMeetingCleanupTimerTask(ExpiredMeetingCleanupTimerTask c) {
         cleaner = c;
         cleaner.setMeetingService(this);
         cleaner.start();

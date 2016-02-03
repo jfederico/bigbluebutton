@@ -1839,6 +1839,11 @@ class ApiController {
         }
 
         //Execute code specific for this call
+        Map<String, String> metaParams = ParamsProcessorUtil.processMetaParam(params)
+        if ( !metaParams.empty ) {
+            //Proceed with the update
+            meetingService.updateRecordings(recordIdList, metaParams);
+        }
 
         withFormat {
             xml {
