@@ -66,6 +66,16 @@ class UrlMappings {
             action = [GET:'updateRecordingsHandler', POST:'updateRecordingsHandler']
         }
 
+        "/api/authorizeRecordings"(controller:"api") {
+            action = [GET:'authorizeRecordingsHandler', POST:'authorizeRecordingsHandler']
+        }
+
+        "/playback/"(view:'/error')
+
+        "/playback/$action?/$version/$resource**" {
+            controller = 'playback'
+        }
+            
 		"/$controller/$action?/$id?(.${format})?"{
 			constraints {
 				// apply constraints here

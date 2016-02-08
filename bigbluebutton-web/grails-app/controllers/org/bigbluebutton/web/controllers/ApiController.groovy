@@ -1857,6 +1857,48 @@ class ApiController {
         }
     }
 
+    def authorizeRecordingsHandler = {
+        String API_CALL = "authorizeRecordings"
+        log.debug CONTROLLER_NAME + "#${API_CALL}"
+
+        Map<String,String> params_required = new HashMap<String,String>()
+        // Set parameter recordID as required
+        String recordId = params.recordID
+        params_required.put("recordID", recordId)
+        String action = params.action
+        params_required.put("action", action)
+        String schema = params.schema
+        params_required.put("schema", schema)
+
+        if ( !preprocessRecordingsCall(API_CALL, params_required) ) {
+            return
+        }
+
+        List<String> recordIdList = new ArrayList<String>()
+        recordIdList = preprocessRecordIdList(recordId)
+        if ( recordIdList == null ) {
+            return
+        }
+
+        //Execute code specific for this call
+        Map<String, String> metaParams = ParamsProcessorUtil.processMetaParam(params)
+        if ( !metaParams.empty ) {
+            //Proceed with the update
+            meetingService.updateRecordings(recordIdList, metaParams);
+        }
+
+        withFormat {
+            xml {
+                render(contentType:"text/xml") {
+                    response() {
+                        returncode(RESP_CODE_SUCCESS)
+                        updated(true)
+                    }
+                }
+            }
+        }
+    }
+
     private boolean preprocessRecordingsCall(API_CALL, Map<String,String> params_required) {
         ApiErrors errors = new ApiErrors()
 

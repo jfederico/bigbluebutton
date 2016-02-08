@@ -29,6 +29,7 @@ class PresentationController {
   PresentationService presentationService
   
   def index = {
+    log.debug("presentation:index")
     render(view:'upload-file') 
   }
   
