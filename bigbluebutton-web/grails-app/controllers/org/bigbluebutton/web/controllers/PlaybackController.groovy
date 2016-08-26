@@ -6,7 +6,6 @@ import javax.servlet.http.Cookie
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.codec.digest.DigestUtils
-//import org.apache.commons.httpclient.Cookie
 import org.apache.commons.lang.StringUtils
 
 import org.bigbluebutton.api.ApiErrors
@@ -21,7 +20,6 @@ class PlaybackController {
         String API_CALL = 'playback'
 
         String serverURL = grailsApplication.config.accessControlAllowOrigin;
-        String securitySalt = grailsApplication.config.securitySalt;
 
         if ( !params.containsKey('action') || !params.containsKey('version') || !params.containsKey('resource') ) {
             render(view:'error')
@@ -35,9 +33,9 @@ class PlaybackController {
             //Add parameters for authentication
             String static_url = "${serverURL}${static_resource}"
             static_url += query_string
+            log.debug(static_url)
 
             //Execute the redirect
-            log.debug(static_url)
             response.setHeader('X-Accel-Redirect', "${static_resource}")
             response.setHeader('X-Accel-Mapping', '')
             response.sendRedirect(static_url)
@@ -76,6 +74,7 @@ class PlaybackController {
     private void respondWithErrors(errorList) {
         render(view:'error')
     }
+
 
     private void logParameters(Object params, boolean debug = false) {
         def divider = "----------------------------------"

@@ -41,16 +41,16 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <property name="messagingService" ref="messagingService" />
   </bean>
 
-    <bean id="meetingService" class="org.bigbluebutton.api.MeetingService" init-method="start" destroy-method="stop">
-        <property name="defaultMeetingExpireDuration" value="${defaultMeetingExpireDuration}"/>
-        <property name="defaultMeetingCreateJoinDuration" value="${defaultMeetingCreateJoinDuration}"/>
-        <property name="removeMeetingWhenEnded" value="${removeMeetingWhenEnded}"/>
-        <property name="expiredMeetingCleanupTimerTask" ref="expiredMeetingCleanupTimerTask"/>
-        <property name="messagingService" ref="messagingService"/>
-        <property name="recordingService" ref="recordingService"/>
-        <property name="presDownloadService" ref="presDownloadService"/>
-        <property name="paramsProcessorUtil" ref="paramsProcessorUtil"/>
-	  <property name="stunTurnService" ref="stunTurnService"/>
+  <bean id="meetingService" class="org.bigbluebutton.api.MeetingService" init-method="start" destroy-method="stop">
+    <property name="defaultMeetingExpireDuration" value="${defaultMeetingExpireDuration}"/>
+    <property name="defaultMeetingCreateJoinDuration" value="${defaultMeetingCreateJoinDuration}"/>
+    <property name="removeMeetingWhenEnded" value="${removeMeetingWhenEnded}"/>
+    <property name="expiredMeetingCleanupTimerTask" ref="expiredMeetingCleanupTimerTask"/>
+    <property name="messagingService" ref="messagingService"/>
+    <property name="recordingService" ref="recordingService"/>
+    <property name="presDownloadService" ref="presDownloadService"/>
+    <property name="paramsProcessorUtil" ref="paramsProcessorUtil"/>
+    <property name="stunTurnService" ref="stunTurnService"/>
   </bean>
 
   <bean id="recordingServiceHelper" class="org.bigbluebutton.api.RecordingServiceHelperImp"/>
@@ -96,9 +96,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <property name="defaultAvatarURL" value="${defaultAvatarURL}"/>
     <property name="defaultConfigURL" value="${defaultConfigURL}"/>
   </bean>
-        
-	<import resource="doc-conversion.xml" />
-	<import resource="bbb-redis-pool.xml" />
-	<import resource="bbb-redis-messaging.xml" />
-	<import resource="turn-stun-servers.xml" />
+
+  <bean id="onetimeURLResourceTokenManager" class="org.bigbluebutton.api.OnetimeURLResourceTokenManager" init-method="init">
+    <property name="ttl" value="${defaultRecordingURLTTL}"/>
+  </bean>
+
+  <import resource="doc-conversion.xml" />
+  <import resource="bbb-redis-pool.xml" />
+  <import resource="bbb-redis-messaging.xml" />
+  <import resource="turn-stun-servers.xml" />
 </beans>

@@ -80,8 +80,7 @@ public class MeetingService implements MessageListener {
     private BlockingQueue<IMessage> receivedMessages = new LinkedBlockingQueue<IMessage>();
     private volatile boolean processMessage = false;
 
-    private final Executor msgProcessorExec = Executors
-            .newSingleThreadExecutor();
+    private final Executor msgProcessorExec = Executors.newSingleThreadExecutor();
     private final Executor runExec = Executors.newSingleThreadExecutor();
 
     /**
@@ -394,19 +393,14 @@ public class MeetingService implements MessageListener {
         return null;
     }
 
-    public Map<String, Recording> getRecordings(List<String> idList,
-            List<String> states) {
-        List<Recording> recsList = recordingService.getRecordings(idList,
-                states);
+    public Map<String, Recording> getRecordings(List<String> idList, List<String> states) {
+        List<Recording> recsList = recordingService.getRecordings(idList, states);
         Map<String, Recording> recs = reorderRecordings(recsList);
         return recs;
     }
 
-    public Map<String, Recording> filterRecordingsByMetadata(
-            Map<String, Recording> recordings,
-            Map<String, String> metadataFilters) {
-        return recordingService.filterRecordingsByMetadata(recordings,
-                metadataFilters);
+    public Map<String, Recording> filterRecordingsByMetadata(Map<String, Recording> recordings, Map<String, String> metadataFilters) {
+        return recordingService.filterRecordingsByMetadata(recordings, metadataFilters);
     }
 
     public Map<String, Recording> reorderRecordings(List<Recording> olds) {

@@ -41,15 +41,16 @@ grails.project.dependency.resolution = {
         grailsCentral()
         mavenCentral()
         // uncomment these (or add new ones) to enable remote dependency resolution from public Maven repositories
-        //mavenRepo "http://repository.codehaus.org"
-        //mavenRepo "http://download.java.net/maven/2/"
-        //mavenRepo "http://repository.jboss.com/maven2/"
+        mavenRepo "http://repository.codehaus.org"
+        mavenRepo "http://download.java.net/maven/2/"
+        mavenRepo "http://repository.jboss.com/maven2/"
     }
 
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
         // runtime 'mysql:mysql-connector-java:5.1.27'
         runtime 'org.json:json:20160212'
+        compile 'org.apache.httpcomponents:httpclient:4.2.6'
     }
 
     plugins {
@@ -58,7 +59,7 @@ grails.project.dependency.resolution = {
 
         // plugins for the compile step
         compile ":scaffolding:2.1.0"
-//        compile ':cache:1.1.3' //TODO commented out for now Anton
+        //compile ':cache:1.1.3' //TODO commented out for now Anton
 
         // plugins needed at runtime but not for compilation
         runtime ":hibernate4:4.3.5.2" // or ":hibernate4:4.3.1.1"

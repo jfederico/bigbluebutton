@@ -68,6 +68,7 @@ public class ParamsProcessorUtil {
     private boolean disableRecordingDefault;
     private boolean autoStartRecording;
     private boolean allowStartStopRecording;
+    private String defaultRecordingMode;
 
     private String defaultConfigXML = null;
 
@@ -727,7 +728,11 @@ public class ParamsProcessorUtil {
 	public void setAllowStartStopRecording(boolean allowStartStopRecording) {
 		this.allowStartStopRecording = allowStartStopRecording;
 	}
-	
+
+  public void defaultRecordingMode(String mode) {
+		this.defaultRecordingMode = mode;
+	}
+
 	public void setdefaultAvatarURL(String url) {
 		this.defaultAvatarURL = url;
 	}

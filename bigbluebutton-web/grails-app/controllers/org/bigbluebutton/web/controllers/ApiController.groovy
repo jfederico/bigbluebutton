@@ -19,6 +19,7 @@
 package org.bigbluebutton.web.controllers
 
 import javax.servlet.ServletRequest;
+import org.apache.http.client.utils.URIBuilder;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,16 +34,21 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bigbluebutton.api.domain.Config;
 import org.bigbluebutton.api.domain.Meeting;
+import org.bigbluebutton.api.domain.Playback;
 import org.bigbluebutton.api.domain.Recording;
+import org.bigbluebutton.api.domain.ResourceToken;
 import org.bigbluebutton.api.domain.User;
 import org.bigbluebutton.api.domain.UserSession;
 import org.bigbluebutton.api.ApiErrors;
+import org.bigbluebutton.api.ApiService;
 import org.bigbluebutton.api.ClientConfigService;
 import org.bigbluebutton.api.MeetingService;
+import org.bigbluebutton.api.OnetimeURLResourceTokenManager;
 import org.bigbluebutton.api.ParamsProcessorUtil;
 import org.bigbluebutton.api.Util;
 import org.bigbluebutton.presentation.PresentationUrlDownloadService;
 import org.bigbluebutton.presentation.UploadedPresentation
+import org.bigbluebutton.web.services.ApiService
 import org.bigbluebutton.web.services.PresentationService
 import org.bigbluebutton.web.services.turn.StunTurnService;
 import org.bigbluebutton.web.services.turn.TurnEntry;
@@ -69,6 +75,8 @@ class ApiController {
   ClientConfigService configService
   PresentationUrlDownloadService presDownloadService
   StunTurnService stunTurnService
+  ApiService apiService
+  OnetimeURLResourceTokenManager onetimeURLResourceTokenManager
 
   /* general methods */
   def index = {
@@ -1753,6 +1761,7 @@ class ApiController {
     }
 
     Map<String,Recording> recs = meetingService.getRecordings(internalRecordIds, states);
+    processRecordingsByMode(recs);
     recs = meetingService.filterRecordingsByMetadata(recs, ParamsProcessorUtil.processMetaParam(params));
 
     if (recs.isEmpty()) {
@@ -1785,6 +1794,28 @@ class ApiController {
         render(text: xmlText.toString(), contentType: "text/xml")
       }
     }
+  }
+
+  private void processRecordingsByMode( recs ) {
+    if( onetimeURLResourceTokenManager != null )
+    for (Map.Entry<String, Recording> entry : recs.entrySet()) {
+      Recording r = entry.getValue()
+      if ( r.getMetadata("mode") == "onetimeurl" || r.getMetadata("mode") == "oauth2" ) {
+        // Create a resourceToken
+        ResourceToken resourceToken = onetimeURLResourceTokenManager.createResourceToken(r.getId())
+
+        //Override the recording url
+        List<Playback> playbacks = r.getPlaybacks()
+        for ( Playback p : playbacks ) {
+          URIBuilder b = new URIBuilder(p.getUrl())
+          String qs = "token=" + resourceToken.getTokenId()
+          b.setQuery(qs)
+          p.setUrl(b.toString())
+        }
+      }
+    }
+    else
+    log.info("resourceTokenManager is null")
   }
 
   /******************************************************
