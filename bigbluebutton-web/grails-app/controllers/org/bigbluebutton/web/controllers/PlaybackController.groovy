@@ -40,9 +40,11 @@ class PlaybackController {
                 // It is token based
                 ResourceToken resourceToken = onetimeURLResourceTokenManager.lookupResourceToken(params.get("token"))
                 if ( resourceToken == null ) { // Not found
-                    errors.setError("generalError","resource token was not found");
+                    errors.setError("generalError","resource token was not found")
                 } else if ( resourceToken.isExpired(onetimeURLResourceTokenManager.getTtl()) ) {
-                    errors.setError("generalError","token has expired");
+                    errors.setError("generalError","token has expired")
+                } else if ( resourceToken.isUsed() && session[resourceToken.getTokenId()] == null  ) {
+                  errors.setError("generalError","Access denied. Not the owner of the token")
                 } else {
                     recordingID = resourceToken.getResourceId()
                     Map<String,Recording> recordings = meetingService.getRecordings(new ArrayList<String>([recordingID]), new ArrayList<String>()) // by default only published/unpublished
@@ -50,6 +52,10 @@ class PlaybackController {
                         errors.setError("generalError","the recording corresponding to this token was not found")
                     } else if ( (recording = recordings.get(recordingID)).getState() != Recording.STATE_PUBLISHED ) {
                         errors.setError("generalError","the recording corresponding to this token is not published")
+                    } else {
+                        // Use the token
+                        resourceToken.setUsed();
+                        session[resourceToken.getTokenId()] = true;
                     }
                 }
             } else {
@@ -73,7 +79,7 @@ class PlaybackController {
                   } else {
                     String mode = recording.getMetadata("mode")
                     if (  mode != null && mode != "unprotected"  ) {
-                      errors.setError("generalError","this recording is protected")
+                      errors.setError("generalError","this recording is protected, token must be provided")
                     }
                   }
                 }

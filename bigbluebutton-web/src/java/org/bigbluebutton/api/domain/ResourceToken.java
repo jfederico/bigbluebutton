@@ -37,6 +37,7 @@ public class ResourceToken {
   private String  tokenId;
   private String  resourceId;
   private long    createTime;
+  private long    useTime;
   
   public ResourceToken(String resourceId) {
     this.tokenId = UUID.randomUUID().toString();
@@ -62,6 +63,14 @@ public class ResourceToken {
 
   public boolean isExpired(int ttl) {
     long now = System.currentTimeMillis();
-    return (this.createTime + ttl) >= now;
+    return (now - ttl * 1000) >= this.createTime;
+  }
+  
+  public boolean isUsed() {
+    return (this.useTime != 0);
+  }
+  
+  public void setUsed() {
+    this.useTime = System.currentTimeMillis();
   }
 }
