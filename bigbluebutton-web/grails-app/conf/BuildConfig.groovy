@@ -60,15 +60,13 @@ grails.project.dependency.resolution = {
         // plugins for the compile step
         compile ":scaffolding:2.1.0"
         //compile ':cache:1.1.3' //TODO commented out for now Anton
+        // asset-pipeline 2.0+ requires Java 7, use version 1.9.x with Java 6
+        compile ":asset-pipeline:2.5.7"
 
         // plugins needed at runtime but not for compilation
         runtime ":hibernate4:4.3.5.2" // or ":hibernate4:4.3.1.1"
         runtime ":database-migration:1.4.0"
-        //runtime ":jquery:1.11.0"
-        runtime ":asset-pipeline:1.8.3"
-        // Uncomment these (or add new ones) to enable additional resources capabilities
-        //runtime ":zipped-resources:1.0.1"
-        //runtime ":cached-resources:1.1"
-        //runtime ":yui-minify-resources:0.1.5"
+        runtime ":jquery:1.11.1"
+        runtime ':twitter-bootstrap:3.3.5'
     }
 }

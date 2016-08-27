@@ -68,6 +68,10 @@ public class ApiErrors {
 		errors.add(new String[] {"maxParticipantsReached", "The number of participants allowed for this meeting has been reached."});
 	}
 
+	public void setError(String errorKey, String errorMessage) {
+		errors.add(new String[] {errorKey, errorMessage});
+	}
+
 	public boolean hasErrors() {
 		return errors.size() > 0;
 	}
