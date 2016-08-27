@@ -57,9 +57,12 @@ public class OnetimeURLResourceTokenManager {
 	}
 
   public ResourceToken lookupResourceToken(String tokenId){
+			//for (Map.Entry<String,ResourceToken> entry : this.resourceTokens.entrySet()) {
+			//	System.out.println(entry.getKey());
+			//}
 			ResourceToken token = null;
 			if ( this.resourceTokens.containsKey(tokenId) ) {
-				this.resourceTokens.get(tokenId);
+				token = this.resourceTokens.get(tokenId);
 			}
 			return token;
 	}

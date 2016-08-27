@@ -26,7 +26,7 @@
           <#if p?? && p.getFormat()??>
           <format>
             <type>${p.getFormat()}</type>
-            <url>${p.getUrl()}</url>
+            <url><![CDATA[${p.getUrl()}]]></url>
             <length>${p.getLength()}</length>
             <#-- Missing p.getExtensions() -->
           </format>

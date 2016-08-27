@@ -1797,7 +1797,6 @@ class ApiController {
   }
 
   private void processRecordingsByMode( recs ) {
-    if( onetimeURLResourceTokenManager != null )
     for (Map.Entry<String, Recording> entry : recs.entrySet()) {
       Recording r = entry.getValue()
       if ( r.getMetadata("mode") == "onetimeurl" || r.getMetadata("mode") == "oauth2" ) {
@@ -1808,14 +1807,12 @@ class ApiController {
         List<Playback> playbacks = r.getPlaybacks()
         for ( Playback p : playbacks ) {
           URIBuilder b = new URIBuilder(p.getUrl())
-          String qs = "token=" + resourceToken.getTokenId()
+          String qs = "meetingId=${resourceToken.getResourceId()}&token=${resourceToken.getTokenId()}"
           b.setQuery(qs)
           p.setUrl(b.toString())
         }
       }
     }
-    else
-    log.info("resourceTokenManager is null")
   }
 
   /******************************************************
