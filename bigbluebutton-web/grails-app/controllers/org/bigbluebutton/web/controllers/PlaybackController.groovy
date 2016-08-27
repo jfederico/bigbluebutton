@@ -9,36 +9,75 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.lang.StringUtils
 
 import org.bigbluebutton.api.ApiErrors
-import org.bigbluebutton.api.ParamsProcessorUtil;
+import org.bigbluebutton.api.OnetimeURLResourceTokenManager
+import org.bigbluebutton.api.ParamsProcessorUtil
+import org.bigbluebutton.api.domain.ResourceToken
+import org.bigbluebutton.api.domain.Recording
 
 class PlaybackController {
 
     ParamsProcessorUtil paramsProcessorUtil
+    OnetimeURLResourceTokenManager onetimeURLResourceTokenManager
 
     def presentation() {
         logParameters(params)
         String API_CALL = 'playback'
 
-        String serverURL = grailsApplication.config.accessControlAllowOrigin;
+        ApiErrors errors = new ApiErrors()
+        Recording recording
 
-        if ( !params.containsKey('action') || !params.containsKey('version') || !params.containsKey('resource') ) {
+        if ( !params.containsKey('action') || !params.containsKey('version') || !params.containsKey('resource') || params.get('resource') == "" ) {
+            errors.setError("generalError","The URL is incorrect");
             render(view:'error')
 
         } else {
-            // Prepare the static URL
-            String static_resource = "/static-${params.controller}/${params.action}/${params.version}/${params.resource}"
-            //String query_string = "?meetingId=${params.meetingId}"
-            String query_string = request.queryString != null? "?${request.queryString}": ""
+            if ( params.containsKey("token") ) {
+                // It is token based
+                ResourceToken resourceToken = onetimeURLResourceTokenManager.lookupResourceToken(params.get("token"))
+                if ( resourceToken == null ) { // Not found
+                    errors.setError("generalError","resource token was not found");
+                } else if ( resourceToken.isExpired(onetimeURLResourceTokenManager.getTtl()) ) {
+                    errors.setError("generalError","token has expired");
+                } else {
+                    String recordingID = resourceToken.getResourceId()
+                    Map<String,Recording> recordings = meetingService.getRecordings(recordingID) // by default only published/unpublished
+                    if ( recordings.isEmpty() || !recordings.containsKey(recordingID) ) {
+                        errors.setError("generalError","the recording corresponding to this token was not found")
+                    } else if ( (recording = recordings.get(recordingID)).getState() == !Recording.STATE_PUBLISHED ) {
+                        errors.setError("generalError","the recording corresponding to this token is not published")
+                    }
+                }
+            } else if ( params.containsKey("meetingID") ) {
+                String recordingID = params.get("meetingID")
+                Map<String,Recording> recordings = meetingService.getRecordings(recordingID) // by default only published/unpublished
+                if ( recordings.isEmpty() || !recordings.containsKey(recordingID) ) {
+                    errors.setError("generalError","the recording corresponding to this token was not found")
+                } else if ( (recording = recordings.get(recordingID)).getState() == !Recording.STATE_PUBLISHED ) {
+                    errors.setError("generalError","the recording corresponding to this token is not published")
+                }
+            } else {
+                errors.setError("generalError","the request must include a valid token or a valid recordingID")
+            }
+        }
 
-            //Add parameters for authentication
-            String static_url = "${serverURL}${static_resource}"
-            static_url += query_string
-            log.debug(static_url)
+        if (errors.hasErrors()) {
+          respondWithErrors(errors)
+          return
+        } else {
+          // Prepare the static URL
+          String static_resource = "/static-${params.controller}/${params.action}/${params.version}/${params.resource}"
+          String query_string = "?meetingId=${recording.getId()}"
+          //String query_string = request.queryString != null? "?${request.queryString}": ""
 
-            //Execute the redirect
-            response.setHeader('X-Accel-Redirect', "${static_resource}")
-            response.setHeader('X-Accel-Mapping', '')
-            response.sendRedirect(static_url)
+          //Add parameters for authentication
+          String static_url = "${grailsApplication.config.accessControlAllowOrigin}${static_resource}"
+          static_url += query_string
+          log.debug(static_url)
+
+          //Execute the redirect
+          response.setHeader('X-Accel-Redirect', "${static_resource}")
+          response.setHeader('X-Accel-Mapping', '')
+          response.sendRedirect(static_url)
         }
     }
 
@@ -72,7 +111,13 @@ class PlaybackController {
     }
 
     private void respondWithErrors(errorList) {
-        render(view:'error')
+        ArrayList errors = errorList.getErrors();
+        Iterator itr = errors.iterator();
+        while (itr.hasNext()){
+          String[] error = (String[]) itr.next();
+          log.debug error[0] + ": " + error[1] 
+        }
+        render(view: "error", model: ['errors': errors])
     }
 
 
