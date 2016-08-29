@@ -272,6 +272,9 @@ class BigbluebuttonService {
         meta += "&meta_contextId=" + bbbProxy.getStringEncoded(params.get(Parameter.COURSE_ID) == null? "": params.get(Parameter.COURSE_ID))
         meta += "&meta_contextActivity=" + bbbProxy.getStringEncoded(params.get(Parameter.RESOURCE_LINK_TITLE) == null? "": params.get(Parameter.RESOURCE_LINK_TITLE))
         meta += "&meta_contextActivityDescription=" + bbbProxy.getStringEncoded(params.get(Parameter.RESOURCE_LINK_DESCRIPTION) == null? "": params.get(Parameter.RESOURCE_LINK_DESCRIPTION))
+        if ( params.get(Parameter.CUSTOM_PLAYBACK_MODE) != null ) {
+            meta += "&meta_mode=" + bbbProxy.getStringEncoded(params.get(Parameter.CUSTOM_PLAYBACK_MODE))
+        }
 
         return meta
     }

@@ -55,6 +55,7 @@ public class Parameter {
     public static final String CUSTOM_WELCOME = "custom_welcome";
     public static final String CUSTOM_MODE = "custom_mode";
     public static final String CUSTOM_ALL_MODERATORS = "custom_all_moderators";
+    public static final String CUSTOM_PLAYBACK_MODE = "custom_playback_mode";
     
     ///BigBlueButton internal parameters
     public static final String BBB_RECORDING_ID = "bbb_recording_id";
