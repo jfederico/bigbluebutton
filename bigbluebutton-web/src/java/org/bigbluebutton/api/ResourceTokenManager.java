@@ -31,8 +31,8 @@ import org.bigbluebutton.api.domain.ResourceToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OnetimeURLResourceTokenManager {
-    private static Logger log = LoggerFactory.getLogger(OnetimeURLResourceTokenManager.class);
+public class ResourceTokenManager {
+    private static Logger log = LoggerFactory.getLogger(ResourceTokenManager.class);
 
     //Attributes
     private int ttl;

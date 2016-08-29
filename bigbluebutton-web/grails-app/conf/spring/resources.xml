@@ -97,7 +97,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <property name="defaultConfigURL" value="${defaultConfigURL}"/>
   </bean>
 
-  <bean id="onetimeURLResourceTokenManager" class="org.bigbluebutton.api.OnetimeURLResourceTokenManager" init-method="init">
+  <bean id="resourceTokenManager" class="org.bigbluebutton.api.ResourceTokenManager" init-method="init">
     <property name="ttl" value="${defaultRecordingURLTTL}"/>
   </bean>
 

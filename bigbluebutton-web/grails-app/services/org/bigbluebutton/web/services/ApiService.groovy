@@ -18,11 +18,11 @@
 */
 package org.bigbluebutton.web.services
 
-import org.bigbluebutton.api.OnetimeURLResourceTokenManager;
+import org.bigbluebutton.api.ResourceTokenManager;
 
 class ApiService {
 
-    OnetimeURLResourceTokenManager onetimeURLResourceTokenManager
+    ResourceTokenManager resourceTokenManager
 
     def serviceMethod() {
 

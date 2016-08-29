@@ -43,7 +43,7 @@ import org.bigbluebutton.api.ApiErrors;
 import org.bigbluebutton.api.ApiService;
 import org.bigbluebutton.api.ClientConfigService;
 import org.bigbluebutton.api.MeetingService;
-import org.bigbluebutton.api.OnetimeURLResourceTokenManager;
+import org.bigbluebutton.api.ResourceTokenManager;
 import org.bigbluebutton.api.ParamsProcessorUtil;
 import org.bigbluebutton.api.Util;
 import org.bigbluebutton.presentation.PresentationUrlDownloadService;
@@ -76,7 +76,7 @@ class ApiController {
   PresentationUrlDownloadService presDownloadService
   StunTurnService stunTurnService
   ApiService apiService
-  OnetimeURLResourceTokenManager onetimeURLResourceTokenManager
+  ResourceTokenManager resourceTokenManager
 
   /* general methods */
   def index = {
@@ -1801,7 +1801,7 @@ class ApiController {
       Recording r = entry.getValue()
       if ( r.getMetadata("mode") == "onetimeurl" || r.getMetadata("mode") == "oauth2" ) {
         // Create a resourceToken
-        ResourceToken resourceToken = onetimeURLResourceTokenManager.createResourceToken(r.getId())
+        ResourceToken resourceToken = resourceTokenManager.createResourceToken(r.getId())
 
         //Override the recording url
         List<Playback> playbacks = r.getPlaybacks()

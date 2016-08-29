@@ -11,7 +11,7 @@ import org.apache.commons.lang.StringUtils
 
 import org.bigbluebutton.api.ApiErrors
 import org.bigbluebutton.api.MeetingService
-import org.bigbluebutton.api.OnetimeURLResourceTokenManager
+import org.bigbluebutton.api.ResourceTokenManager
 import org.bigbluebutton.api.ParamsProcessorUtil
 import org.bigbluebutton.api.domain.ResourceToken
 import org.bigbluebutton.api.domain.Recording
@@ -20,7 +20,7 @@ class PlaybackController {
 
     MeetingService meetingService
     ParamsProcessorUtil paramsProcessorUtil
-    OnetimeURLResourceTokenManager onetimeURLResourceTokenManager
+    ResourceTokenManager resourceTokenManager
 
     def presentation() {
         logParameters(params)
@@ -38,10 +38,10 @@ class PlaybackController {
         } else if ( params.get("resource") == "playback.html") {
             if ( params.containsKey("token") ) {
                 // It is token based
-                ResourceToken resourceToken = onetimeURLResourceTokenManager.lookupResourceToken(params.get("token"))
+                ResourceToken resourceToken = resourceTokenManager.lookupResourceToken(params.get("token"))
                 if ( resourceToken == null ) { // Not found
                     errors.setError("generalError","resource token was not found")
-                } else if ( resourceToken.isExpired(onetimeURLResourceTokenManager.getTtl()) ) {
+                } else if ( resourceToken.isExpired(resourceTokenManager.getTtl()) ) {
                     errors.setError("generalError","token has expired")
                 } else if ( resourceToken.isUsed() && session[resourceToken.getTokenId()] == null  ) {
                   errors.setError("generalError","Access denied. Not the owner of the token")
