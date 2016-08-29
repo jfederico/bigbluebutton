@@ -32,45 +32,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ResourceToken {
-  private static Logger log = LoggerFactory.getLogger(ResourceToken.class);
-  
-  private String  tokenId;
-  private String  resourceId;
-  private long    createTime;
-  private long    useTime;
-  
-  public ResourceToken(String resourceId) {
-    this.tokenId = UUID.randomUUID().toString();
-    this.resourceId = resourceId;
-    this.createTime = System.currentTimeMillis();
-  }
+    private static Logger log = LoggerFactory.getLogger(ResourceToken.class);
 
-  public String getTokenId() {
-    return tokenId;
-  }
+    private String  tokenId;
+    private String  resourceId;
+    private long    createTime;
+    private long    useTime;
 
-  public String getResourceId() {
-    return resourceId;
-  }
+    public ResourceToken(String resourceId) {
+        this.tokenId = UUID.randomUUID().toString();
+        this.resourceId = resourceId;
+        this.createTime = System.currentTimeMillis();
+    }
 
-  public long getCreateTime() {
-    return createTime;
-  }
+    public String getTokenId() {
+        return tokenId;
+    }
 
-  public void setResourceId(String resourceId) {
-    this.resourceId = resourceId;
-  }
+    public String getResourceId() {
+        return resourceId;
+    }
 
-  public boolean isExpired(int ttl) {
-    long now = System.currentTimeMillis();
-    return (now - ttl * 1000) >= this.createTime;
-  }
-  
-  public boolean isUsed() {
-    return (this.useTime != 0);
-  }
-  
-  public void setUsed() {
-    this.useTime = System.currentTimeMillis();
-  }
+    public long getCreateTime() {
+        return createTime;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    public boolean isExpired(int ttl) {
+        long now = System.currentTimeMillis();
+        return (now - ttl * 1000) >= this.createTime;
+    }
+
+    public boolean isUsed() {
+        return (this.useTime != 0);
+    }
+
+    public void setUsed() {
+        this.useTime = System.currentTimeMillis();
+    }
 }

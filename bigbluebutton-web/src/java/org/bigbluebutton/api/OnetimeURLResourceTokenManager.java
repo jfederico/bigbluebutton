@@ -16,7 +16,6 @@
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 *
 */
-
 package org.bigbluebutton.api;
 
 import java.util.Collection;
@@ -33,47 +32,57 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OnetimeURLResourceTokenManager {
-	private static Logger log = LoggerFactory.getLogger(OnetimeURLResourceTokenManager.class);
+    private static Logger log = LoggerFactory.getLogger(OnetimeURLResourceTokenManager.class);
 
-	//Attributes
-  private int ttl;
-  private Map<String, ResourceToken> resourceTokens;
+    //Attributes
+    private int ttl;
+    private Map<String, ResourceToken> resourceTokens;
 
-  //Methods
-	public void init() {
-	  this.resourceTokens = new HashMap<String, ResourceToken>();
-	}
+    //Methods
+    public void init() {
+        this.resourceTokens = new HashMap<String, ResourceToken>();
+    }
 
-	public void setTtl(int ttl) {
-		this.ttl = ttl;
-	}
+    public void setTtl(int ttl) {
+        this.ttl = ttl;
+    }
 
-	public int getTtl() {
-		return this.ttl;
-	}
-	
-	public Map<String, ResourceToken> getAllResourceTokens() {
-			return this.resourceTokens;
-	}
+    public int getTtl() {
+        return this.ttl;
+    }
 
-  public ResourceToken lookupResourceToken(String tokenId){
-			//for (Map.Entry<String,ResourceToken> entry : this.resourceTokens.entrySet()) {
-			//	System.out.println(entry.getKey());
-			//}
-			ResourceToken token = null;
-			if ( this.resourceTokens.containsKey(tokenId) ) {
-				token = this.resourceTokens.get(tokenId);
-			}
-			return token;
-	}
+    public Map<String, ResourceToken> getAllResourceTokens() {
+        return this.resourceTokens;
+    }
 
-  public ResourceToken createResourceToken(String resourceId) {
-		ResourceToken token = new ResourceToken(resourceId);
-		this.resourceTokens.put(token.getTokenId(), token);
-		return token;
-	}
-	
-  public void destroyResourceToken(String tokenId) {
-		this.resourceTokens.remove(tokenId);
-	}
+    public ResourceToken lookupResourceToken(String tokenId){
+      //for (Map.Entry<String,ResourceToken> entry : this.resourceTokens.entrySet()) {
+      //    System.out.println(entry.getKey());
+      //}
+      ResourceToken token = null;
+      if ( this.resourceTokens.containsKey(tokenId) ) {
+          token = this.resourceTokens.get(tokenId);
+      }
+      return token;
+    }
+
+    public ResourceToken createResourceToken(String resourceId) {
+        ResourceToken token = new ResourceToken(resourceId);
+        this.resourceTokens.put(token.getTokenId(), token);
+        return token;
+    }
+
+    public void destroyResourceToken(String tokenId) {
+        this.resourceTokens.remove(tokenId);
+    }
+
+    public void purgeResourceTokens() {
+        for (Map.Entry<String, ResourceToken> entry : this.resourceTokens.entrySet()) {
+            ResourceToken resourceToken = entry.getValue();
+            if ( resourceToken.isExpired(this.ttl) ) {
+                this.resourceTokens.remove(resourceToken.getTokenId());
+                System.out.println("Removed: " + entry.getKey());
+            }
+        }
+    }
 }
