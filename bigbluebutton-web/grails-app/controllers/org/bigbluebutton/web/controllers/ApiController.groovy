@@ -40,7 +40,6 @@ import org.bigbluebutton.api.domain.ResourceToken;
 import org.bigbluebutton.api.domain.User;
 import org.bigbluebutton.api.domain.UserSession;
 import org.bigbluebutton.api.ApiErrors;
-import org.bigbluebutton.api.ApiService;
 import org.bigbluebutton.api.ClientConfigService;
 import org.bigbluebutton.api.MeetingService;
 import org.bigbluebutton.api.ResourceTokenManager;
@@ -48,7 +47,6 @@ import org.bigbluebutton.api.ParamsProcessorUtil;
 import org.bigbluebutton.api.Util;
 import org.bigbluebutton.presentation.PresentationUrlDownloadService;
 import org.bigbluebutton.presentation.UploadedPresentation
-import org.bigbluebutton.web.services.ApiService
 import org.bigbluebutton.web.services.PresentationService
 import org.bigbluebutton.web.services.turn.StunTurnService;
 import org.bigbluebutton.web.services.turn.TurnEntry;
@@ -75,7 +73,6 @@ class ApiController {
   ClientConfigService configService
   PresentationUrlDownloadService presDownloadService
   StunTurnService stunTurnService
-  ApiService apiService
   ResourceTokenManager resourceTokenManager
 
   /* general methods */
