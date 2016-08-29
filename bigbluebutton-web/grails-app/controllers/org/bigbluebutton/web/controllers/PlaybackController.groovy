@@ -11,7 +11,7 @@ import org.apache.commons.lang.StringUtils
 
 import org.bigbluebutton.api.ApiErrors
 import org.bigbluebutton.api.MeetingService
-import org.bigbluebutton.api.ResourceTokenManager
+import org.bigbluebutton.api.ResourceTokenService
 import org.bigbluebutton.api.ParamsProcessorUtil
 import org.bigbluebutton.api.domain.ResourceToken
 import org.bigbluebutton.api.domain.Recording
@@ -20,7 +20,7 @@ class PlaybackController {
 
     MeetingService meetingService
     ParamsProcessorUtil paramsProcessorUtil
-    ResourceTokenManager resourceTokenManager
+    ResourceTokenService resourceTokenService
 
     def presentation() {
         logParameters(params)
@@ -38,10 +38,10 @@ class PlaybackController {
         } else if ( params.get("resource") == "playback.html") {
             if ( params.containsKey("token") ) {
                 // It is token based
-                ResourceToken resourceToken = resourceTokenManager.lookupResourceToken(params.get("token"))
+                ResourceToken resourceToken = resourceTokenService.lookupResourceToken(params.get("token"))
                 if ( resourceToken == null ) { // Not found
                     errors.setError("generalError","resource token was not found")
-                } else if ( resourceToken.isExpired(resourceTokenManager.getTtl()) ) {
+                } else if ( resourceToken.isExpired(resourceTokenService.getTtl()) ) {
                     errors.setError("generalError","token has expired")
                 } else if ( resourceToken.isUsed() && session[resourceToken.getTokenId()] == null  ) {
                   errors.setError("generalError","Access denied. Not the owner of the token")
@@ -103,7 +103,6 @@ class PlaybackController {
           // Prepare the static URL
           String static_resource = "/static-${params.controller}/${params.action}/${params.version}/${params.resource}"
           String static_url = "${grailsApplication.config.accessControlAllowOrigin}${static_resource}${query_string}"
-          //log.debug(static_url)
 
           //Execute the redirect
           response.setHeader('X-Accel-Redirect', "${static_resource}")

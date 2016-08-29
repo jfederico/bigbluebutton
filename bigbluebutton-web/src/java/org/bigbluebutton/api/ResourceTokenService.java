@@ -18,6 +18,7 @@
 */
 package org.bigbluebutton.api;
 
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -28,19 +29,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.lang.RandomStringUtils;
 import org.bigbluebutton.api.domain.ResourceToken;
+import org.bigbluebutton.web.services.ResourceTokenCleanupTimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ResourceTokenManager {
-    private static Logger log = LoggerFactory.getLogger(ResourceTokenManager.class);
+public class ResourceTokenService {
+    private static Logger log = LoggerFactory.getLogger(ResourceTokenService.class);
+
+    private ResourceTokenCleanupTimerTask resourceTokenCleaner;
 
     //Attributes
     private int ttl;
-    private Map<String, ResourceToken> resourceTokens;
+    private final ConcurrentMap<String, ResourceToken> resourceTokens;
 
     //Methods
-    public void init() {
-        this.resourceTokens = new HashMap<String, ResourceToken>();
+    public ResourceTokenService() {
+        resourceTokens = new ConcurrentHashMap<String, ResourceToken>();
     }
 
     public void setTtl(int ttl) {
@@ -56,9 +60,6 @@ public class ResourceTokenManager {
     }
 
     public ResourceToken lookupResourceToken(String tokenId){
-      //for (Map.Entry<String,ResourceToken> entry : this.resourceTokens.entrySet()) {
-      //    System.out.println(entry.getKey());
-      //}
       ResourceToken token = null;
       if ( this.resourceTokens.containsKey(tokenId) ) {
           token = this.resourceTokens.get(tokenId);
@@ -77,12 +78,18 @@ public class ResourceTokenManager {
     }
 
     public void purgeResourceTokens() {
-        for (Map.Entry<String, ResourceToken> entry : this.resourceTokens.entrySet()) {
+        for (AbstractMap.Entry<String, ResourceToken> entry : this.resourceTokens.entrySet()) {
             ResourceToken resourceToken = entry.getValue();
             if ( resourceToken.isExpired(this.ttl) ) {
                 this.resourceTokens.remove(resourceToken.getTokenId());
-                System.out.println("Removed: " + entry.getKey());
+                log.debug("Token expired [" + entry.getKey() + "] was removed");
             }
         }
+    }
+
+    public void setResourceTokenCleanupTimerTask(ResourceTokenCleanupTimerTask c) {
+        resourceTokenCleaner = c;
+        resourceTokenCleaner.setResourceTokenService(this);
+        resourceTokenCleaner.start();
     }
 }

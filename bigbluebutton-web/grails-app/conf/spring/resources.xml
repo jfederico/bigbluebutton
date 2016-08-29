@@ -35,6 +35,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
   <bean id="registeredUserCleanupTimerTask" class="org.bigbluebutton.web.services.RegisteredUserCleanupTimerTask"/>
 
+  <bean id="resourceTokenCleanupTimerTask" class="org.bigbluebutton.web.services.ResourceTokenCleanupTimerTask"/>
+
   <bean id="keepAliveService" class="org.bigbluebutton.web.services.KeepAliveService" 
        init-method="start" destroy-method="stop">
     <property name="runEvery" value="${checkBBBServerEvery}"/>
@@ -51,6 +53,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <property name="presDownloadService" ref="presDownloadService"/>
     <property name="paramsProcessorUtil" ref="paramsProcessorUtil"/>
     <property name="stunTurnService" ref="stunTurnService"/>
+    <property name="registeredUserCleanupTimerTask" ref="registeredUserCleanupTimerTask"/>
   </bean>
 
   <bean id="recordingServiceHelper" class="org.bigbluebutton.api.RecordingServiceHelperImp"/>
@@ -97,8 +100,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <property name="defaultConfigURL" value="${defaultConfigURL}"/>
   </bean>
 
-  <bean id="resourceTokenManager" class="org.bigbluebutton.api.ResourceTokenManager" init-method="init">
+  <bean id="resourceTokenService" class="org.bigbluebutton.api.ResourceTokenService">
     <property name="ttl" value="${defaultRecordingURLTTL}"/>
+    <property name="resourceTokenCleanupTimerTask" ref="resourceTokenCleanupTimerTask"/>
   </bean>
 
   <import resource="doc-conversion.xml" />
