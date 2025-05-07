@@ -1,0 +1,6 @@
+# For PRODUCTION
+publish_dir: /var/bigbluebutton/published/transcript
+
+# For DEVELOPMENT
+#publish_dir: /home/ubuntu/temp/published/transcript
+
