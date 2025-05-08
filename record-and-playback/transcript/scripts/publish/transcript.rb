@@ -67,8 +67,10 @@ begin
       BigBlueButton.logger.info("Making dir target_dir")
       FileUtils.mkdir_p target_dir
 
-      BigBlueButton.logger.info("copying: #{process_dir}/audio.ogg to -> #{target_dir}")
-      FileUtils.cp("#{process_dir}/audio.ogg", target_dir)
+      BigBlueButton.logger.info("Copying recording files from #{process_dir} to -> #{target_dir}")
+      FileUtils.cp("#{process_dir}/recording.ogg", target_dir)
+      FileUtils.cp("#{process_dir}/recording.mp3", target_dir)
+      FileUtils.cp("#{process_dir}/recording.txt", target_dir)
 
       @doc = Nokogiri::XML(File.open("#{raw_archive_dir}/events.xml"))
       recording_time = BigBlueButton::Events.get_recording_length(@doc)
@@ -97,7 +99,7 @@ begin
       metadata_with_playback = Nokogiri::XML::Builder.with(metadata.at('recording')) do |xml|
         xml.playback {
           xml.format("transcript")
-          xml.link("#{playback_protocol}://#{playback_host}/transcript/#{meeting_id}/audio.ogg")
+          xml.link("#{playback_protocol}://#{playback_host}/transcript/#{meeting_id}/recording.txt")
           xml.duration("#{recording_time}")
         }
       end
@@ -138,7 +140,6 @@ begin
     end
   end
 
-
 rescue Exception => e
   BigBlueButton.logger.error(e.message)
   e.backtrace.each do |traceline|
@@ -150,4 +151,3 @@ rescue Exception => e
 
   exit 1
 end
-

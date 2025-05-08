@@ -30,6 +30,7 @@ require 'rubygems'
 require 'optimist'
 require 'yaml'
 require 'json'
+require 'open3'
 
 opts = Optimist::options do
   opt :meeting_id, "Meeting id to archive", :default => '58f4a6b3-cd07-444d-8564-59116cb53974', :type => String
@@ -72,6 +73,50 @@ if not FileTest.directory?(target_dir)
     BigBlueButton.logger.info("Created inital metadata.xml")
 
     BigBlueButton::AudioProcessor.process("#{raw_archive_dir}", "#{target_dir}/audio")
+
+    # Convert recording.ogg to recording.mp3 using ffmpeg
+    ogg_file = "#{target_dir}/recording.ogg"
+
+    # Check if ffmpeg is installed
+    unless system("which ffmpeg > /dev/null 2>&1")
+      BigBlueButton.logger.error("ffmpeg is not installed. Please install ffmpeg to convert audio files.")
+      raise "ffmpeg is not installed"
+    end
+
+    # Check if the recording.ogg file exists
+    unless File.exist?(ogg_file)
+      BigBlueButton.logger.error("recording.ogg file not found in #{ogg_file}")
+      raise "recording.ogg file not found"
+    end
+
+    # Run ogg to mp3 conversion
+    mp3_file = "#{target_dir}/recording.mp3"
+    BigBlueButton.logger.info("Converting #{ogg_file} to MP3: #{mp3_file}")
+
+    convert_command = "ffmpeg -y -i #{ogg_file} -codec:a libmp3lame -qscale:a 2 #{mp3_file}"
+    stdout_str, stderr_str, status = Open3.capture3(convert_command)
+    unless status.success?
+      BigBlueButton.logger.error("Error converting to mp3: #{stderr_str}")
+      raise "Failed to convert recording to mp3"
+    end
+
+    BigBlueButton.logger.info("MP3 file created: #{mp3_file}")
+
+    # Run Whisper transcription
+    model_dir = "/var/bigbluebutton/whisper-models"
+    FileUtils.mkdir_p(model_dir) unless File.exist?(model_dir)
+    whisper_command = "whisper #{mp3_file} --model base --model_dir #{model_dir} --output_dir #{target_dir} --output_format txt"
+
+    BigBlueButton.logger.info("Running Whisper transcription: #{whisper_command}")
+
+    stdout_str, stderr_str, status = Open3.capture3(whisper_command)
+    unless status.success?
+      BigBlueButton.logger.error("Whisper failed: #{stderr_str}")
+      raise "Failed to transcribe audio with Whisper"
+    end
+
+    transcript_path = "#{target_dir}/recording.txt"
+    BigBlueButton.logger.info("Transcript file created at: #{transcript_path}")
 
     # Get the real-time start and end timestamp
     @doc = Nokogiri::XML(File.open("#{raw_archive_dir}/events.xml"))
