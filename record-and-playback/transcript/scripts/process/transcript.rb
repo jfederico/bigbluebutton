@@ -32,6 +32,28 @@ require 'yaml'
 require 'json'
 require 'open3'
 
+def silent_audio?(file_path)
+  silence_threshold = -50 # dB
+  min_sound_duration = 1.0 # seconds
+
+  command = [
+    "ffmpeg", "-i", file_path,
+    "-af", "volumedetect", "-f", "null", "-"
+  ]
+  stdout_str, stderr_str, status = Open3.capture3(*command)
+  return true unless status.success?
+
+  # Find mean volume in dB
+  match = stderr_str.match(/mean_volume:\s*(-?\d+(\.\d+)?) dB/)
+  return true unless match
+
+  mean_volume = match[1].to_f
+  BigBlueButton.logger.info("Detected mean volume: #{mean_volume} dB")
+
+  # Consider it silent if average volume is below -45 dB
+  mean_volume < -45.0
+end
+
 opts = Optimist::options do
   opt :meeting_id, "Meeting id to archive", :default => '58f4a6b3-cd07-444d-8564-59116cb53974', :type => String
 end
@@ -76,6 +98,7 @@ if not FileTest.directory?(target_dir)
 
     # Convert recording.ogg to recording.mp3 using ffmpeg
     ogg_file = "#{target_dir}/recording.ogg"
+    mp3_file = "#{target_dir}/recording.mp3"
 
     # Check if ffmpeg is installed
     unless system("which ffmpeg > /dev/null 2>&1")
@@ -90,44 +113,40 @@ if not FileTest.directory?(target_dir)
     end
 
     # Run ogg to mp3 conversion
-    mp3_file = "#{target_dir}/recording.mp3"
     BigBlueButton.logger.info("Converting #{ogg_file} to MP3: #{mp3_file}")
-
     convert_command = "ffmpeg -y -i #{ogg_file} -codec:a libmp3lame -qscale:a 2 #{mp3_file}"
     stdout_str, stderr_str, status = Open3.capture3(convert_command)
     unless status.success?
       BigBlueButton.logger.error("Error converting to mp3: #{stderr_str}")
       raise "Failed to convert recording to mp3"
     end
-
     BigBlueButton.logger.info("MP3 file created: #{mp3_file}")
 
     # Run Whisper transcription
     model_dir = "/var/bigbluebutton/whisper-models"
     FileUtils.mkdir_p(model_dir) unless File.exist?(model_dir)
-    whisper_command = "whisper #{mp3_file} --model base --model_dir #{model_dir} --output_dir #{target_dir} --output_format txt"
 
-    BigBlueButton.logger.info("Running Whisper transcription: #{whisper_command}")
-
-    stdout_str, stderr_str, status = Open3.capture3(whisper_command)
-    unless status.success?
-      BigBlueButton.logger.error("Whisper failed: #{stderr_str}")
-      raise "Failed to transcribe audio with Whisper"
+    if silent_audio?(mp3_file)
+      BigBlueButton.logger.info("MP3 detected as silent. Skipping Whisper and creating empty transcript.")
+      FileUtils.touch("#{target_dir}/recording.txt")
+    else
+      whisper_command = "whisper #{mp3_file} --model base --model_dir #{model_dir} --output_dir #{target_dir} --output_format txt"
+      BigBlueButton.logger.info("Running Whisper transcription: #{whisper_command}")
+      stdout_str, stderr_str, status = Open3.capture3(whisper_command)
+      unless status.success?
+        BigBlueButton.logger.error("Whisper failed: #{stderr_str}")
+        raise "Failed to transcribe audio with Whisper"
+      end
+      BigBlueButton.logger.info("Transcript file created at: #{target_dir}/recording.txt")
     end
-
-    transcript_path = "#{target_dir}/recording.txt"
-    BigBlueButton.logger.info("Transcript file created at: #{transcript_path}")
 
     # Get the real-time start and end timestamp
     @doc = Nokogiri::XML(File.open("#{raw_archive_dir}/events.xml"))
-
     meeting_start = @doc.xpath("//event")[0][:timestamp]
     meeting_end = @doc.xpath("//event").last()[:timestamp]
-
     match = /.*-(\d+)$/.match(meeting_id)
     real_start_time = match[1]
     real_end_time = (real_start_time.to_i + (meeting_end.to_i - meeting_start.to_i)).to_s
-
 
     # Add start_time, end_time and meta to metadata.xml
     ## Load metadata.xml

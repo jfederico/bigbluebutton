@@ -19,9 +19,10 @@ This document describes the installation requirements and setup steps required t
 
 To enable the `transcript` format, you need to install the Whisper command-line tool on the server.
 
-### 1️⃣ Upgrade `pip` (recommended)
+### 1️⃣ Install and Upgrade `pip` (recommended)
 
 ```bash
+apt install python3-pip
 pip install --upgrade pip
 ```
 
@@ -47,9 +48,10 @@ By default, Whisper will automatically download the `base` model the first time 
 If you want to pre-download the model to avoid delays or network dependency during transcription:
 
 ```bash
-mkdir -p /var/bigbluebutton/whisper-models
+sudo mkdir -p /var/bigbluebutton/whisper-models
+sudo chown bigbluebutton:bigbluebutton /var/bigbluebutton/whisper-models
 cd /var/bigbluebutton/whisper-models
-wget https://huggingface.co/openai/whisper-base/resolve/main/base.pt
+sudo -u bigbluebutton whisper --model base --model_dir /var/bigbluebutton/whisper-models --output_dir /tmp /usr/share/sounds/alsa/Front_Center.wav
 ```
 
 This directory is automatically used by the transcript processing scripts.
@@ -110,8 +112,7 @@ Ensure that the scripts are executable and owned by the bigbluebutton user.
 After copying the scripts, restart the recording processing and publishing services so they load the new format:
 
 ```
-sudo systemctl restart bbb-rap-process
-sudo systemctl restart bbb-rap-publish
+sudo systemctl restart bbb-rap-resque-worker.service
 ```
 
 Refer to the BigBlueButton documentation on custom recording formats for more details.
