@@ -54,6 +54,34 @@ def silent_audio?(file_path)
   mean_volume < -45.0
 end
 
+def ensure_recording_ogg(raw_archive_dir, target_dir)
+  mixed_ogg = File.join(raw_archive_dir, 'mixed.ogg')
+  recording_ogg = File.join(target_dir, 'recording.ogg')
+
+  BigBlueButton.logger.info("Ensuring standardized ogg source at: #{recording_ogg}")
+
+  if File.exist?(mixed_ogg)
+    BigBlueButton.logger.info("mixed.ogg found. Copying to standardized name: #{recording_ogg}")
+    begin
+      FileUtils.cp(mixed_ogg, recording_ogg)
+    rescue => e
+      BigBlueButton.logger.error("Failed to copy mixed.ogg to recording.ogg: #{e.message}")
+      raise
+    end
+  else
+    BigBlueButton.logger.info("mixed.ogg not found. Generating presenter audio from: #{raw_archive_dir}")
+    BigBlueButton::AudioProcessor.process("#{raw_archive_dir}", "#{target_dir}/audio")
+  end
+
+  unless File.exist?(recording_ogg)
+    BigBlueButton.logger.error("recording.ogg not found in #{recording_ogg}")
+    raise "recording.ogg file not found"
+  end
+
+  BigBlueButton.logger.info("Using standardized ogg source: #{recording_ogg}")
+  recording_ogg
+end
+
 opts = Optimist::options do
   opt :meeting_id, "Meeting id to archive", :default => '58f4a6b3-cd07-444d-8564-59116cb53974', :type => String
 end
@@ -94,10 +122,13 @@ if not FileTest.directory?(target_dir)
     metadata_xml.close
     BigBlueButton.logger.info("Created inital metadata.xml")
 
-    BigBlueButton::AudioProcessor.process("#{raw_archive_dir}", "#{target_dir}/audio")
+    # Ensure we have standardized ogg source at #{target_dir}/recording.ogg
+    ensure_recording_ogg(raw_archive_dir, target_dir)
 
-    # Convert recording.ogg to recording.mp3 using ffmpeg
+    # Always use the standardized ogg file name for downstream steps
     ogg_file = "#{target_dir}/recording.ogg"
+
+    # Convert chosen ogg to recording.mp3 using ffmpeg
     mp3_file = "#{target_dir}/recording.mp3"
 
     # Check if ffmpeg is installed
@@ -106,14 +137,14 @@ if not FileTest.directory?(target_dir)
       raise "ffmpeg is not installed"
     end
 
-    # Check if the recording.ogg file exists
+    # Check if the source ogg file exists
     unless File.exist?(ogg_file)
-      BigBlueButton.logger.error("recording.ogg file not found in #{ogg_file}")
-      raise "recording.ogg file not found"
+      BigBlueButton.logger.error("Source ogg file not found: #{ogg_file}")
+      raise "source ogg file not found"
     end
 
     # Run ogg to mp3 conversion
-    BigBlueButton.logger.info("Converting #{ogg_file} to MP3: #{mp3_file}")
+    BigBlueButton.logger.info("Converting source ogg to MP3: #{ogg_file} -> #{mp3_file}")
     convert_command = "ffmpeg -y -i #{ogg_file} -codec:a libmp3lame -qscale:a 2 #{mp3_file}"
     stdout_str, stderr_str, status = Open3.capture3(convert_command)
     unless status.success?
