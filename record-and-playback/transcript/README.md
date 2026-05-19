@@ -86,12 +86,17 @@ Edit the following file:
 /etc/bigbluebutton/recording/recording.yml
 ```
 
-Add `transcript` to the list of published formats. Example:
+Add `transcript` to the recording workflow steps. Example:
 
 ```yaml
-published:
-  - presentation
-  - transcript
+steps:
+  archive: "sanity"
+  sanity: "captions"
+  captions:
+    - process:presentation
+    - process:transcript
+  process:presentation: publish:presentation
+  process:transcript: publish:transcript
 ```
 
 This activates the transcript format as part of BigBlueButton’s recording processing pipeline.
@@ -125,7 +130,8 @@ Refer to the BigBlueButton documentation on custom recording formats for more de
 Once installed and configured:
 
 - The process script (`process/transcript.rb`) will:
-  - Convert audio.ogg to audio.mp3
+  - Produce a standardized `recording.ogg` (from `mixed.ogg` if available, otherwise via AudioProcessor)
+  - Convert `recording.ogg` to `recording.mp3`
   - Generate `recording.txt` transcript using Whisper
   - Create metadata.xml
 

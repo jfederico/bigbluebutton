@@ -71,6 +71,12 @@ def ensure_recording_ogg(raw_archive_dir, target_dir)
   else
     BigBlueButton.logger.info("mixed.ogg not found. Generating presenter audio from: #{raw_archive_dir}")
     BigBlueButton::AudioProcessor.process("#{raw_archive_dir}", "#{target_dir}/audio")
+
+    audio_ogg = File.join(target_dir, 'audio.ogg')
+    if File.exist?(audio_ogg)
+      BigBlueButton.logger.info("Renaming audio.ogg to recording.ogg")
+      FileUtils.mv(audio_ogg, recording_ogg)
+    end
   end
 
   unless File.exist?(recording_ogg)
