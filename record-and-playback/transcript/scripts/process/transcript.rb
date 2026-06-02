@@ -256,6 +256,8 @@ if not FileTest.directory?(target_dir)
     e.backtrace.each do |traceline|
       BigBlueButton.logger.error(traceline)
     end
+    FileUtils.rm_rf(target_dir) if File.exist?(target_dir)
+    BigBlueButton.logger.info("Cleaned up process dir #{target_dir} after failure")
     exit 1
   end
 end
